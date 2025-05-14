@@ -1,6 +1,9 @@
 import { Controller, Post, Body, Get, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { Query } from '@nestjs/common';
+
 
 @ApiTags('Users')
 @Controller('users')
@@ -19,7 +22,6 @@ findAll(
 ) {
   return this.usersService.findAll(Number(page), Number(limit));
 }
-
 
 
   @Get(':id')

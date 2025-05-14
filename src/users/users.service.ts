@@ -10,35 +10,43 @@ import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
-    @InjectRepository(Organizer) private readonly organizerRepo: Repository<Organizer>,
-    @InjectRepository(Participant) private readonly participantRepo: Repository<Participant>,
-    @InjectRepository(Speaker) private readonly speakerRepo: Repository<Speaker>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+
+    @InjectRepository(Organizer)
+    private readonly organizerRepo: Repository<Organizer>,
+
+    @InjectRepository(Participant)
+    private readonly participantRepo: Repository<Participant>,
+
+    @InjectRepository(Speaker)
+    private readonly speakerRepo: Repository<Speaker>,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
-    let user: User;
-
-    if (dto.tipo === 'organizer') {
-      user = this.organizerRepo.create(dto);
-      return this.organizerRepo.save(user);
+    switch (dto.tipo) {
+      case 'organizer':
+        return await this.organizerRepo.save(this.organizerRepo.create(dto));
+      case 'participant':
+        return await this.participantRepo.save(this.participantRepo.create(dto));
+      case 'speaker':
+        return await this.speakerRepo.save(this.speakerRepo.create(dto));
+      default:
+        throw new Error('Tipo de usuário inválido');
     }
-
-    if (dto.tipo === 'participant') {
-      user = this.participantRepo.create(dto);
-      return this.participantRepo.save(user);
-    }
-
-    if (dto.tipo === 'speaker') {
-      user = this.speakerRepo.create(dto);
-      return this.speakerRepo.save(user);
-    }
-
-    throw new Error('Tipo de usuário inválido');
   }
 
-  findOne(id: number): Promise<User> {
-    return this.userRepo.findOneBy({ id });
+  async findAll(page = 1, limit = 10): Promise<User[]> {
+    return this.userRepo.find({
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+  }
+
+  async findOne(id: number): Promise<User> {
+    const user = await this.userRepo.findOneBy({ id });
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    return user;
   }
 
   async update(id: number, data: Partial<User>): Promise<User> {
@@ -52,14 +60,4 @@ export class UsersService {
       throw new NotFoundException('Usuário não encontrado');
     }
   }
-
-  async findAll(page = 1, limit = 10): Promise<{ data: User[]; total: number }> {
-  const [data, total] = await this.userRepo.findAndCount({
-    skip: (page - 1) * limit,
-    take: limit,
-  });
-
-  return { data, total };
-}
-
 }

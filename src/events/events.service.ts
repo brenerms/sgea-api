@@ -14,9 +14,7 @@ export class EventsService {
 
   async create(dto: CreateEventDto): Promise<Event> {
     const organizador = await this.orgRepo.findOne({ where: { id: dto.organizadorId } });
-    if (!organizador) {
-      throw new NotFoundException('Organizador não encontrado');
-    }
+    if (!organizador) throw new NotFoundException('Organizador não encontrado');
 
     const event = this.eventRepo.create({
       nome: dto.nome,
@@ -38,8 +36,13 @@ export class EventsService {
     return event;
   }
 
-  async update(id: number, data: Partial<Event>): Promise<Event> {
-    await this.eventRepo.update(id, data);
+  async update(id: number, dto: Partial<CreateEventDto>): Promise<Event> {
+    const updateData = {
+      ...dto,
+      data: dto.data ? new Date(dto.data) : undefined,
+    };
+
+    await this.eventRepo.update(id, updateData);
     return this.findOne(id);
   }
 

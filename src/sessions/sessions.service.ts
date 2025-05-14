@@ -25,14 +25,11 @@ export class SessionsService {
 
   async create(eventId: number, dto: CreateSessionDto): Promise<Session> {
     const event = await this.eventRepo.findOne({ where: { id: eventId } });
-
-    if (!event) {
-      throw new NotFoundException('Evento não encontrado');
-    }
+    if (!event) throw new NotFoundException('Evento não encontrado');
 
     if (dto.tipo === 'lecture') {
       const lecture = this.lectureRepo.create({ ...dto, evento: event });
-      return this.lectureRepo.save(lecture);
+      return await this.lectureRepo.save(lecture) as Session;
     }
 
     if (dto.tipo === 'workshop') {
@@ -41,7 +38,7 @@ export class SessionsService {
         evento: event,
         capacidadeMaxima: dto.capacidadeMaxima,
       });
-      return this.workshopRepo.save(workshop);
+      return await this.workshopRepo.save(workshop) as Session;
     }
 
     throw new Error('Tipo de sessão inválido');

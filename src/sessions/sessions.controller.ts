@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
+// sessions.controller.ts e sessions.service.ts
 import { CreateSessionDto } from './dto/create-session.dto';
+
 
 @Controller('events/:eventId/sessions')
 export class SessionsController {
